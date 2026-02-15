@@ -4,6 +4,11 @@ const JPEG_QUALITY = 0.95;
 const PDF_VERSION = "1.7";
 const ENABLE_PDF_RASTER_AUDIT_LOG = true;
 
+/* Canvas background fill — matches --color-surface in tokens.css.
+ * Canvas 2D API cannot read CSS custom properties, so this
+ * is the one necessarily hardcoded constant in the project. */
+const CANVAS_BG = "#ffffff";
+
 const popoverPorts = new Set();
 const viewerPdfCache = new Map();
 
@@ -185,9 +190,11 @@ async function startCapture() {
 
     latestFileName = buildPdfFileName(activeTab);
     await preparePageForCapture(activeTab.id);
+    await hideExtensionUi(activeTab.id);
 
     setState({ progress: 8, label: "Reading page metrics...", captureMode: "pdf" });
     metrics = await getPageMetrics(activeTab.id);
+    await neutralizeStickyPositioning(activeTab.id);
 
     const capturePlan = buildCapturePlan(metrics);
     setState({ progress: 12, label: `Capturing ${capturePlan.yPositions.length} slices...` });
@@ -243,9 +250,19 @@ async function startCapture() {
     }
     if (activeTab?.id) {
       try {
+        await restoreStickyPositioning(activeTab.id);
+      } catch (_stickyError) {
+        // Best effort restore only.
+      }
+      try {
         await restorePageAfterCapture(activeTab.id);
       } catch (restoreDomError) {
         console.warn("Failed to restore page after capture cleanup:", restoreDomError);
+      }
+      try {
+        await showExtensionUi(activeTab.id);
+      } catch (_showUiError) {
+        // Best effort restore only.
       }
     }
     captureLock = false;
@@ -278,9 +295,11 @@ async function startCaptureJpg() {
     }
 
     latestJpgFileName = buildJpgFileName(activeTab);
+    await hideExtensionUi(activeTab.id);
 
     setState({ progress: 8, label: "Reading page metrics...", captureMode: "jpg" });
     metrics = await getPageMetrics(activeTab.id);
+    await neutralizeStickyPositioning(activeTab.id);
 
     const capturePlan = buildCapturePlan(metrics);
     setState({ progress: 12, label: `Capturing ${capturePlan.yPositions.length} slices...` });
@@ -333,6 +352,18 @@ async function startCaptureJpg() {
       try {
         await scrollTabTo(activeTab.id, metrics.initialY);
       } catch (_restoreError) {
+        // Best effort restore only.
+      }
+    }
+    if (activeTab?.id) {
+      try {
+        await restoreStickyPositioning(activeTab.id);
+      } catch (_stickyError) {
+        // Best effort restore only.
+      }
+      try {
+        await showExtensionUi(activeTab.id);
+      } catch (_showUiError) {
         // Best effort restore only.
       }
     }
@@ -612,7 +643,7 @@ async function stitchScreenshots(screenshots, metrics, capturePlan) {
   const ctx = stitchedCanvas.getContext("2d", { alpha: false });
   const cropTopDevicePx = Math.max(0, Math.round((capturePlan?.overlapCssPx || 0) * scale));
 
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = CANVAS_BG;
   ctx.fillRect(0, 0, stitchedWidth, stitchedHeight);
 
   for (let i = 0; i < screenshots.length; i += 1) {
@@ -655,7 +686,7 @@ async function splitCanvasToJpegs(stitchedCanvas) {
     const pageCanvas = new OffscreenCanvas(pageWidth, sliceHeight);
     const pageCtx = pageCanvas.getContext("2d", { alpha: false });
 
-    pageCtx.fillStyle = "#ffffff";
+    pageCtx.fillStyle = CANVAS_BG;
     pageCtx.fillRect(0, 0, pageWidth, sliceHeight);
     pageCtx.drawImage(stitchedCanvas, 0, y, pageWidth, sliceHeight, 0, 0, pageWidth, sliceHeight);
 
@@ -1257,6 +1288,78 @@ async function preparePageForCapture(tabId) {
   } catch (error) {
     console.warn("Capture cleanup skipped:", error);
   }
+}
+
+async function neutralizeStickyPositioning(tabId) {
+  await runInMainWorld(tabId, () => {
+    const ATTR = "data-capture-orig-position";
+    const allElements = document.querySelectorAll("*");
+    for (const el of allElements) {
+      if (!(el instanceof HTMLElement)) continue;
+      // Skip our own extension elements.
+      if (el.id === "__screenshot-ext-popover__" || el.id === "__screenshot-ext-scrim__") continue;
+      const cs = window.getComputedStyle(el);
+      if (cs.position === "fixed" || cs.position === "sticky") {
+        el.setAttribute(ATTR, cs.position);
+        el.style.setProperty("position", "relative", "important");
+      }
+    }
+  });
+}
+
+async function restoreStickyPositioning(tabId) {
+  await runInMainWorld(tabId, () => {
+    const ATTR = "data-capture-orig-position";
+    document.querySelectorAll(`[${ATTR}]`).forEach((el) => {
+      if (!(el instanceof HTMLElement)) return;
+      const orig = el.getAttribute(ATTR);
+      if (orig) {
+        el.style.setProperty("position", orig);
+      } else {
+        el.style.removeProperty("position");
+      }
+      el.removeAttribute(ATTR);
+    });
+  });
+}
+
+async function hideExtensionUi(tabId) {
+  await runInMainWorld(tabId, () => {
+    const ids = [
+      "__screenshot-ext-popover__",
+      "__screenshot-ext-scrim__",
+      "__screenshot-ext-scrim-tokens__",
+    ];
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.dataset.extPrevDisplay = el.style.display || "";
+        el.style.setProperty("display", "none", "important");
+      }
+    }
+  });
+}
+
+async function showExtensionUi(tabId) {
+  await runInMainWorld(tabId, () => {
+    const ids = [
+      "__screenshot-ext-popover__",
+      "__screenshot-ext-scrim__",
+      "__screenshot-ext-scrim-tokens__",
+    ];
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el) {
+        const prev = el.dataset.extPrevDisplay;
+        if (prev) {
+          el.style.display = prev;
+        } else {
+          el.style.removeProperty("display");
+        }
+        delete el.dataset.extPrevDisplay;
+      }
+    }
+  });
 }
 
 async function restorePageAfterCapture(tabId) {

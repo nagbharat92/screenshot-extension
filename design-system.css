@@ -1,89 +1,9 @@
 /* ================================================================
-   Design System — Single source of truth for all design tokens.
-   ================================================================
-   ⚠️  SYNC WARNING:
-   These tokens are duplicated inside content-popover.js (:host block)
-   for Shadow DOM isolation. If you change ANY token here, you MUST
-   also update the matching token in content-popover.js.
+   Design System — Component styles.
+   Tokens are defined in tokens.css (single source of truth).
    ================================================================ */
 
-:root {
-  /* ── Colors — Text ── */
-  --color-text:              #12223a;
-  --color-text-secondary:    #52617a;
-  --color-text-muted:        #5c6a81;
-  --color-text-dark:         #0f2442;
-  --color-text-result:       #243552;
-  --color-text-progress:     #3f4f69;
-  --color-text-error:        #b92020;
-  --color-text-success:      #2e7d32;
-
-  /* ── Colors — Primary (brand) ── */
-  --color-primary:           #155ee3;
-  --color-primary-hover:     #0f4cc0;
-
-  /* ── Colors — Backgrounds ── */
-  --color-white:             #ffffff;
-  --color-bg-start:          #f8fbff;
-  --color-bg-end:            #eef6ff;
-  --color-bg-hover:          #f3f8ff;
-  --color-bg-secondary:      #f0f4fa;
-  --color-bg-secondary-hover:#e2ecfa;
-  --color-bg-success:        #e8f5e9;
-  --color-bg-progress-track: #e8eef6;
-
-  /* ── Colors — Borders ── */
-  --color-border:            #c8d8ef;
-  --color-border-result:     #d5e3f7;
-  --color-border-success:    #a5d6a7;
-
-  /* ── Colors — JPG gradient ── */
-  --color-jpg-start:         #2d8cf0;
-  --color-jpg-end:           #56b870;
-  --color-jpg-start-hover:   #2272d4;
-  --color-jpg-end-hover:     #45a05e;
-
-  /* ── Typography ── */
-  --font-family:   "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
-  --text-xs:       11px;
-  --text-sm:       12px;
-  --text-base:     13px;
-  --text-lg:       18px;
-  --weight-normal: 400;
-  --weight-semi:   600;
-  --weight-bold:   700;
-
-  /* ── Border Radius ── */
-  --radius:    0.625rem;                     /* 10px — base */
-  --radius-xs: calc(var(--radius) - 4px);    /*  6px */
-  --radius-sm: calc(var(--radius) - 2px);    /*  8px */
-  --radius-md: var(--radius);                /* 10px */
-  --radius-lg: calc(var(--radius) + 2px);    /* 12px */
-  --radius-xl: calc(var(--radius) + 6px);    /* 16px */
-
-  /* ── Spacing ── */
-  --space-1: 4px;
-  --space-2: 6px;
-  --space-3: 8px;
-  --space-4: 10px;
-  --space-5: 12px;
-  --space-6: 14px;
-
-  /* ── Layout ── */
-  --popover-width: 340px;
-  --progress-height: 10px;
-
-  /* ── Shadows ── */
-  --shadow-card:    0 2px  8px  rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
-  --shadow-popover: 0 8px  32px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08);
-
-  /* ── Transitions ── */
-  --transition-fast:   120ms ease;
-  --transition-normal: 180ms ease;
-  --transition-slow:   200ms ease;
-
-  color-scheme: light;
-}
+@import url('tokens.css');
 
 /* ================================================================
    Base Styles
@@ -112,7 +32,7 @@ body {
    ================================================================ */
 
 .popover-container {
-  background: linear-gradient(160deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+  background: linear-gradient(160deg, var(--color-bg) 0%, var(--color-bg-muted) 100%);
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -151,8 +71,8 @@ h1 {
 
 .btn {
   border: 1px solid var(--color-border);
-  background: var(--color-white);
-  color: var(--color-text-dark);
+  background: var(--color-surface);
+  color: var(--color-text);
   border-radius: var(--radius-sm);
   padding: 9px var(--space-5);
   font-size: var(--text-base);
@@ -174,7 +94,7 @@ h1 {
 .btn-primary {
   width: 100%;
   background: var(--color-primary);
-  color: var(--color-white);
+  color: var(--color-primary-text);
   border-color: var(--color-primary);
 }
 
@@ -192,23 +112,23 @@ h1 {
 }
 
 .btn-jpg {
-  background: linear-gradient(90deg, var(--color-jpg-start) 0%, var(--color-jpg-end) 100%);
-  color: var(--color-white);
-  border-color: var(--color-jpg-start);
+  background: var(--color-bg-muted);
+  color: var(--color-text);
+  border-color: var(--color-border);
 }
 
 .btn-jpg:hover {
-  background: linear-gradient(90deg, var(--color-jpg-start-hover) 0%, var(--color-jpg-end-hover) 100%);
+  background: var(--color-bg-hover);
 }
 
 .btn-copy {
-  background: var(--color-bg-secondary);
-  color: var(--color-primary);
+  background: var(--color-bg-muted);
+  color: var(--color-text);
   border-color: var(--color-border);
 }
 
 .btn-copy:hover {
-  background: var(--color-bg-secondary-hover);
+  background: var(--color-bg-hover);
 }
 
 .btn-copy.copied {
@@ -230,7 +150,7 @@ h1 {
   justify-content: space-between;
   font-size: var(--text-sm);
   margin-bottom: var(--space-2);
-  color: var(--color-text-progress);
+  color: var(--color-text-muted);
 }
 
 progress {
@@ -245,15 +165,15 @@ progress {
 .result-wrap {
   margin-top: var(--space-5);
   padding: var(--space-4);
-  background: var(--color-white);
-  border: 1px solid var(--color-border-result);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 }
 
 .size-text {
   margin: 0 0 var(--space-4);
   font-size: var(--text-base);
-  color: var(--color-text-result);
+  color: var(--color-text-secondary);
 }
 
 .actions {

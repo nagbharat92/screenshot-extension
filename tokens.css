@@ -1,0 +1,213 @@
+/* ================================================================
+   Design Tokens — Single source of truth for the entire project.
+   ================================================================
+   Consumed by:
+   • design-system.css  → @import url('tokens.css')
+   • content-popover.js → adoptedStyleSheets (fetched at runtime)
+   • viewer.html        → <link rel="stylesheet" href="tokens.css">
+
+   The :host selector ensures tokens also apply inside Shadow DOM
+   when this sheet is adopted via shadow.adoptedStyleSheets.
+
+   Theme: follows browser/system preference automatically via
+   @media (prefers-color-scheme: dark). Light uses Stone neutrals,
+   dark uses Slate neutrals.
+   ================================================================ */
+
+:root, :host {
+
+  /* ── Primitive Palette ──────────────────────────────────────
+     Full color scales from Tailwind / shadcn.
+     Semantic tokens below reference ONLY these primitives.
+     ──────────────────────────────────────────────────────── */
+
+  /* Stone (warm neutral) */
+  --stone-50:  #fafaf9;
+  --stone-100: #f5f5f4;
+  --stone-200: #e7e5e4;
+  --stone-300: #d6d3d1;
+  --stone-400: #a8a29e;
+  --stone-500: #78716c;
+  --stone-600: #57534e;
+  --stone-700: #44403c;
+  --stone-800: #292524;
+  --stone-900: #1c1917;
+  --stone-950: #0c0a09;
+
+  /* Slate (cool neutral) */
+  --slate-50:  #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #020617;
+
+  /* Emerald (success) */
+  --emerald-50:  #ecfdf5;
+  --emerald-100: #d1fae5;
+  --emerald-200: #a7f3d0;
+  --emerald-300: #6ee7b7;
+  --emerald-400: #34d399;
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --emerald-700: #047857;
+  --emerald-800: #065f46;
+  --emerald-900: #064e3b;
+  --emerald-950: #022c22;
+
+  /* Rose (error / destructive) */
+  --rose-50:  #fff1f2;
+  --rose-100: #ffe4e6;
+  --rose-200: #fecdd3;
+  --rose-300: #fda4af;
+  --rose-400: #fb7185;
+  --rose-500: #f43f5e;
+  --rose-600: #e11d48;
+  --rose-700: #be123c;
+  --rose-800: #9f1239;
+  --rose-900: #881337;
+  --rose-950: #4c0519;
+
+  /* Amber (warning — reserved) */
+  --amber-50:  #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+  --amber-800: #92400e;
+  --amber-900: #78350f;
+  --amber-950: #451a03;
+
+  /* ── Semantic Tokens (Light theme — Stone) ──────────────── */
+
+  /* Colors — Text */
+  --color-text:              var(--stone-900);
+  --color-text-secondary:    var(--stone-600);
+  --color-text-muted:        var(--stone-400);
+  --color-text-error:        var(--rose-700);
+  --color-text-success:      var(--emerald-700);
+
+  /* Colors — Primary (neutral) */
+  --color-primary:           var(--stone-900);
+  --color-primary-hover:     var(--stone-800);
+
+  /* Colors — Backgrounds */
+  --color-surface:           #ffffff;
+  --color-bg:                var(--stone-50);
+  --color-bg-muted:          var(--stone-100);
+  --color-bg-hover:          var(--stone-200);
+  --color-bg-success:        var(--emerald-50);
+  --color-bg-error:          var(--rose-50);
+
+  /* Colors — Borders */
+  --color-border:            var(--stone-300);
+  --color-border-success:    var(--emerald-300);
+
+  /* Colors — Overlay */
+  --color-scrim:             rgba(0, 0, 0, 0.4);
+
+  /* Colors — Viewer */
+  --color-viewer-bg:         var(--slate-900);
+  --color-viewer-text:       var(--slate-200);
+
+  /* Colors — Primary text (for text on --color-primary backgrounds) */
+  --color-primary-text:      #ffffff;
+
+  /* ── Typography ── */
+  --font-family:   "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  --text-xs:       11px;
+  --text-sm:       12px;
+  --text-base:     13px;
+  --text-lg:       18px;
+  --weight-normal: 400;
+  --weight-semi:   600;
+  --weight-bold:   700;
+
+  /* ── Border Radius ── */
+  --radius:    0.625rem;                     /* 10px — base */
+  --radius-xs: calc(var(--radius) - 4px);    /*  6px */
+  --radius-sm: calc(var(--radius) - 2px);    /*  8px */
+  --radius-md: var(--radius);                /* 10px */
+  --radius-lg: calc(var(--radius) + 2px);    /* 12px */
+  --radius-xl: calc(var(--radius) + 6px);    /* 16px */
+
+  /* ── Spacing ── */
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 10px;
+  --space-5: 12px;
+  --space-6: 14px;
+
+  /* ── Layout ── */
+  --popover-width: 340px;
+  --progress-height: 10px;
+
+  /* ── Shadows ── */
+  --shadow-card:    0 2px  8px  rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
+  --shadow-popover: 0 8px  32px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08);
+
+  /* ── Transitions ── */
+  --transition-fast:   120ms ease;
+  --transition-normal: 180ms ease;
+  --transition-slow:   200ms ease;
+
+  color-scheme: light;
+}
+
+/* ================================================================
+   Dark Theme — Slate neutrals
+   Activated automatically by browser / OS preference.
+   Only semantic tokens are remapped; primitives stay unchanged.
+   ================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root, :host {
+    /* Colors — Text */
+    --color-text:              var(--slate-50);
+    --color-text-secondary:    var(--slate-400);
+    --color-text-muted:        var(--slate-500);
+    --color-text-error:        var(--rose-400);
+    --color-text-success:      var(--emerald-400);
+
+    /* Colors — Primary (neutral) */
+    --color-primary:           var(--slate-50);
+    --color-primary-hover:     var(--slate-200);
+
+    /* Colors — Backgrounds */
+    --color-surface:           var(--slate-800);
+    --color-bg:                var(--slate-950);
+    --color-bg-muted:          var(--slate-900);
+    --color-bg-hover:          var(--slate-800);
+    --color-bg-success:        var(--emerald-950);
+    --color-bg-error:          var(--rose-950);
+
+    /* Colors — Borders */
+    --color-border:            var(--slate-700);
+    --color-border-success:    var(--emerald-800);
+
+    /* Colors — Overlay */
+    --color-scrim:             rgba(0, 0, 0, 0.6);
+
+    /* Colors — Viewer */
+    --color-viewer-bg:         var(--slate-950);
+    --color-viewer-text:       var(--slate-200);
+
+    /* Colors — Primary text */
+    --color-primary-text:      var(--slate-900);
+
+    /* ── Shadows (stronger for dark backgrounds) ── */
+    --shadow-card:    0 2px  8px  rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06);
+    --shadow-popover: 0 8px  32px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
+
+    color-scheme: dark;
+  }
+}

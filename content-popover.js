@@ -2,6 +2,9 @@
    content-popover.js
    Injects a floating, rounded popover into the active page
    using Shadow DOM for full style isolation.
+
+   Tokens are loaded from tokens.css via adoptedStyleSheets —
+   no token duplication needed.
    ============================================================ */
 (function () {
   const HOST_ID = "__screenshot-ext-popover__";
@@ -11,17 +14,28 @@
   const existing = document.getElementById(HOST_ID);
   if (existing) {
     const existingScrim = document.getElementById(SCRIM_ID);
+    const existingScrimTokens = document.getElementById("__screenshot-ext-scrim-tokens__");
     existing.style.opacity = "0";
     existing.style.transform = "translateY(-8px) scale(0.97)";
-    if (existingScrim) existingScrim.style.opacity = "0";
+    if (existingScrim) {
+      existingScrim.style.opacity = "0";
+    }
     setTimeout(() => {
       existing.remove();
       if (existingScrim) existingScrim.remove();
+      if (existingScrimTokens) existingScrimTokens.remove();
     }, 200);
     return;
   }
 
   /* ── Scrim (dark overlay behind popover) ── */
+  /* Inject tokens onto the page :root so the scrim can resolve --color-scrim */
+  const scrimTokenStyle = document.createElement("link");
+  scrimTokenStyle.id = "__screenshot-ext-scrim-tokens__";
+  scrimTokenStyle.rel = "stylesheet";
+  scrimTokenStyle.href = chrome.runtime.getURL("tokens.css");
+  document.head.appendChild(scrimTokenStyle);
+
   const scrim = document.createElement("div");
   scrim.id = SCRIM_ID;
   Object.assign(scrim.style, {
@@ -30,13 +44,26 @@
     left: "0",
     width: "100vw",
     height: "100vh",
-    background: "rgba(0, 0, 0, 0.4)",
-    backdropFilter: "blur(2px)",
-    WebkitBackdropFilter: "blur(2px)",
     zIndex: "2147483646",
     opacity: "0",
     transition: "opacity 200ms ease",
+    pointerEvents: "auto",
   });
+
+  /* Radial color overlay — strongest near the popover, fading to transparent */
+  const scrimColor = document.createElement("div");
+  Object.assign(scrimColor.style, {
+    position: "absolute",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    background:
+      "radial-gradient(ellipse at 100% 0%, var(--color-scrim) 0%, transparent 80%)",
+    pointerEvents: "none",
+  });
+  scrim.appendChild(scrimColor);
+
   document.documentElement.appendChild(scrim);
 
   /* ── Host element (positioned fixed, top-right) ── */
@@ -65,89 +92,20 @@
   const shadow = host.attachShadow({ mode: "closed" });
 
   /* ────────────────────────────────────
-     Styles (design-system tokens)
+     Styles — tokens loaded from tokens.css (single source of truth),
+     component styles defined inline (no token duplication).
      ──────────────────────────────────── */
-  const style = document.createElement("style");
-  style.textContent = /* css */ `
-    /* ══════════════════════════════════════════════════════════
-       Design tokens — duplicated from design-system.css
-       ⚠️  If you change ANY token, update design-system.css too.
-       ══════════════════════════════════════════════════════════ */
+  const tokensSheet = new CSSStyleSheet();
+  const componentSheet = new CSSStyleSheet();
+
+  /* Fetch tokens.css from the extension bundle */
+  fetch(chrome.runtime.getURL("tokens.css"))
+    .then((r) => r.text())
+    .then((css) => tokensSheet.replaceSync(css));
+
+  componentSheet.replaceSync(/* css */ `
+    /* ── Reset host ── */
     :host {
-      /* ── Colors — Text ── */
-      --color-text:              #12223a;
-      --color-text-secondary:    #52617a;
-      --color-text-muted:        #5c6a81;
-      --color-text-dark:         #0f2442;
-      --color-text-result:       #243552;
-      --color-text-progress:     #3f4f69;
-      --color-text-error:        #b92020;
-      --color-text-success:      #2e7d32;
-
-      /* ── Colors — Primary (brand) ── */
-      --color-primary:           #155ee3;
-      --color-primary-hover:     #0f4cc0;
-
-      /* ── Colors — Backgrounds ── */
-      --color-white:             #ffffff;
-      --color-bg-start:          #f8fbff;
-      --color-bg-end:            #eef6ff;
-      --color-bg-hover:          #f3f8ff;
-      --color-bg-secondary:      #f0f4fa;
-      --color-bg-secondary-hover:#e2ecfa;
-      --color-bg-success:        #e8f5e9;
-      --color-bg-progress-track: #e8eef6;
-
-      /* ── Colors — Borders ── */
-      --color-border:            #c8d8ef;
-      --color-border-result:     #d5e3f7;
-      --color-border-success:    #a5d6a7;
-
-      /* ── Colors — JPG gradient ── */
-      --color-jpg-start:         #2d8cf0;
-      --color-jpg-end:           #56b870;
-      --color-jpg-start-hover:   #2272d4;
-      --color-jpg-end-hover:     #45a05e;
-
-      /* ── Typography ── */
-      --font-family:   "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
-      --text-xs:       11px;
-      --text-sm:       12px;
-      --text-base:     13px;
-      --text-lg:       18px;
-      --weight-normal: 400;
-      --weight-semi:   600;
-      --weight-bold:   700;
-
-      /* ── Border Radius ── */
-      --radius:    0.625rem;
-      --radius-xs: calc(var(--radius) - 4px);
-      --radius-sm: calc(var(--radius) - 2px);
-      --radius-md: var(--radius);
-      --radius-lg: calc(var(--radius) + 2px);
-      --radius-xl: calc(var(--radius) + 6px);
-
-      /* ── Spacing ── */
-      --space-1: 4px;
-      --space-2: 6px;
-      --space-3: 8px;
-      --space-4: 10px;
-      --space-5: 12px;
-      --space-6: 14px;
-
-      /* ── Layout ── */
-      --popover-width:   340px;
-      --progress-height: 10px;
-
-      /* ── Shadows ── */
-      --shadow-popover: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08);
-
-      /* ── Transitions ── */
-      --transition-fast:   120ms ease;
-      --transition-normal: 180ms ease;
-      --transition-slow:   200ms ease;
-
-      /* ── Reset host ── */
       all: initial;
       font-family: var(--font-family);
       color: var(--color-text);
@@ -162,7 +120,7 @@
     /* ── Container ── */
     .popover-container {
       width: var(--popover-width);
-      background: linear-gradient(160deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+      background: linear-gradient(160deg, var(--color-bg) 0%, var(--color-bg-muted) 100%);
       border-radius: var(--radius-xl);
       overflow: hidden;
       box-shadow: var(--shadow-popover);
@@ -195,8 +153,8 @@
     /* ── Buttons ── */
     .btn {
       border: 1px solid var(--color-border);
-      background: var(--color-white);
-      color: var(--color-text-dark);
+      background: var(--color-surface);
+      color: var(--color-text);
       border-radius: var(--radius-sm);
       padding: 9px var(--space-5);
       font-size: var(--text-base);
@@ -218,7 +176,7 @@
     .btn-primary {
       width: 100%;
       background: var(--color-primary);
-      color: var(--color-white);
+      color: var(--color-primary-text);
       border-color: var(--color-primary);
     }
 
@@ -236,23 +194,23 @@
     }
 
     .btn-jpg {
-      background: linear-gradient(90deg, var(--color-jpg-start) 0%, var(--color-jpg-end) 100%);
-      color: var(--color-white);
-      border-color: var(--color-jpg-start);
+      background: var(--color-bg-muted);
+      color: var(--color-text);
+      border-color: var(--color-border);
     }
 
     .btn-jpg:hover {
-      background: linear-gradient(90deg, var(--color-jpg-start-hover) 0%, var(--color-jpg-end-hover) 100%);
+      background: var(--color-bg-hover);
     }
 
     .btn-copy {
-      background: var(--color-bg-secondary);
-      color: var(--color-primary);
+      background: var(--color-bg-muted);
+      color: var(--color-text);
       border-color: var(--color-border);
     }
 
     .btn-copy:hover {
-      background: var(--color-bg-secondary-hover);
+      background: var(--color-bg-hover);
     }
 
     .btn-copy.copied {
@@ -271,7 +229,7 @@
       justify-content: space-between;
       font-size: var(--text-sm);
       margin-bottom: var(--space-2);
-      color: var(--color-text-progress);
+      color: var(--color-text-muted);
     }
 
     progress {
@@ -282,7 +240,7 @@
     }
 
     progress::-webkit-progress-bar {
-      background: var(--color-bg-progress-track);
+      background: var(--color-bg-muted);
       border-radius: 5px;
     }
 
@@ -295,15 +253,15 @@
     .result-wrap {
       margin-top: var(--space-5);
       padding: var(--space-4);
-      background: var(--color-white);
-      border: 1px solid var(--color-border-result);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
     }
 
     .size-text {
       margin: 0 0 var(--space-4);
       font-size: var(--text-base);
-      color: var(--color-text-result);
+      color: var(--color-text-secondary);
     }
 
     .actions {
@@ -325,8 +283,9 @@
     .hidden {
       display: none !important;
     }
-  `;
-  shadow.appendChild(style);
+  `);
+
+  shadow.adoptedStyleSheets = [tokensSheet, componentSheet];
 
   /* ────────────────────────────────────
      HTML
@@ -425,6 +384,7 @@
     setTimeout(() => {
       host.remove();
       scrim.remove();
+      scrimTokenStyle.remove();
     }, 200);
   }
 
