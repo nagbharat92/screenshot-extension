@@ -1,9 +1,5 @@
 const captureBtn = document.getElementById("captureBtn");
 const captureJpgBtn = document.getElementById("captureJpgBtn");
-const progressWrap = document.getElementById("progressWrap");
-const progressBar = document.getElementById("progressBar");
-const progressPct = document.getElementById("progressPct");
-const statusText = document.getElementById("statusText");
 const resultWrap = document.getElementById("resultWrap");
 const sizeText = document.getElementById("sizeText");
 const openBtn = document.getElementById("openBtn");
@@ -117,23 +113,7 @@ chrome.runtime.sendMessage({ type: "GET_STATE" }).then((response) => {
 
 function renderState(state) {
   const status = state?.status || "idle";
-  const progress = Math.max(0, Math.min(100, Math.round(state?.progress || 0)));
-  const label = state?.label || "Ready";
   const captureMode = state?.captureMode || null;
-
-  statusText.textContent = label;
-  progressBar.value = progress;
-  progressPct.textContent = `${progress}%`;
-
-  if (status === "capturing") {
-    progressWrap.classList.remove("hidden");
-    captureBtn.disabled = true;
-    captureJpgBtn.disabled = true;
-    captureBtn.textContent = "Capturing...";
-    captureJpgBtn.textContent = "Capturing...";
-    resultWrap.classList.add("hidden");
-    return;
-  }
 
   captureBtn.disabled = false;
   captureJpgBtn.disabled = false;
@@ -141,7 +121,6 @@ function renderState(state) {
   if (status === "ready") {
     captureBtn.textContent = "Capture as PDF";
     captureJpgBtn.textContent = "Capture as Image";
-    progressWrap.classList.add("hidden");
     resultWrap.classList.remove("hidden");
 
     if (captureMode === "jpg") {
@@ -158,7 +137,6 @@ function renderState(state) {
 
   captureBtn.textContent = "Capture as PDF";
   captureJpgBtn.textContent = "Capture as Image";
-  progressWrap.classList.add("hidden");
   resultWrap.classList.add("hidden");
   copyImgBtn.classList.add("hidden");
 

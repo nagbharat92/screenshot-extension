@@ -3,8 +3,9 @@ const MIN_CAPTURE_INTERVAL_MS = 700;
 const JPEG_QUALITY = 0.95;
 const PDF_VERSION = "1.7";
 const ENABLE_PDF_RASTER_AUDIT_LOG = true;
+const UI_FADE_DURATION_MS = 200;
 
-/* Canvas background fill — matches --color-surface in tokens.css.
+/* Canvas background fill — matches --card in tokens.css.
  * Canvas 2D API cannot read CSS custom properties, so this
  * is the one necessarily hardcoded constant in the project. */
 const CANVAS_BG = "#ffffff";
@@ -67,8 +68,6 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 let currentState = {
   status: "idle",
-  progress: 0,
-  label: "Ready",
   sizeBytes: 0,
   error: "",
   captureMode: null,
@@ -82,6 +81,37 @@ let latestJpgFileName = "webpage-capture.jpg";
 let latestJpgTabId = null;
 let captureLock = false;
 let lastCaptureTs = 0;
+
+/* ── Icon swap (hourglass while capturing) ── */
+
+function setCapturingIcon() {
+  const sizes = [16, 32, 48, 128];
+  const imageData = {};
+  for (const size of sizes) {
+    const canvas = new OffscreenCanvas(size, size);
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, size, size);
+    ctx.font = `${Math.round(size * 0.75)}px serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("\u23F3", size / 2, size / 2 + Math.round(size * 0.04));
+    imageData[size] = ctx.getImageData(0, 0, size, size);
+  }
+  chrome.action.setIcon({ imageData });
+  chrome.action.setTitle({ title: "Capturing…" });
+}
+
+function restoreDefaultIcon() {
+  chrome.action.setIcon({
+    path: {
+      16: "icons/icon16.png",
+      32: "icons/icon32.png",
+      48: "icons/icon48.png",
+      128: "icons/icon128.png",
+    },
+  });
+  /* Title will be re-set per-tab by updateActionStateForTab on next activation */
+}
 
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== "popover-state") {
@@ -175,7 +205,7 @@ async function startCapture() {
   let activeTab = null;
 
   try {
-    setState({ status: "capturing", progress: 2, label: "Finding active tab...", error: "", sizeBytes: 0 });
+    setState({ status: "capturing", error: "", sizeBytes: 0 });
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     activeTab = tab;
@@ -191,32 +221,22 @@ async function startCapture() {
     latestFileName = buildPdfFileName(activeTab);
     await preparePageForCapture(activeTab.id);
     await hideExtensionUi(activeTab.id);
+    setCapturingIcon();
 
-    setState({ progress: 8, label: "Reading page metrics...", captureMode: "pdf" });
     metrics = await getPageMetrics(activeTab.id);
     await neutralizeStickyPositioning(activeTab.id);
 
     const capturePlan = buildCapturePlan(metrics);
-    setState({ progress: 12, label: `Capturing ${capturePlan.yPositions.length} slices...` });
 
     const screenshots = await captureScreenshots(
       activeTab.id,
       activeTab.windowId,
       capturePlan,
-      (done, total) => {
-        const ratio = total === 0 ? 0 : done / total;
-        const progress = 12 + Math.round(ratio * 58);
-        setState({ progress, label: `Captured ${done}/${total} slices...` });
-      }
+      () => {}
     );
 
-    setState({ progress: 75, label: "Stitching screenshots..." });
     const stitched = await stitchScreenshots(screenshots, metrics, capturePlan);
-
-    setState({ progress: 84, label: "Optimizing PDF pages..." });
     const pageImages = await splitCanvasToJpegs(stitched);
-
-    setState({ progress: 94, label: "Building PDF..." });
     const pdfBytes = buildPdf(pageImages);
     auditRasterOnlyPdf(pdfBytes);
     latestPdfBytes = pdfBytes;
@@ -224,8 +244,6 @@ async function startCapture() {
 
     setState({
       status: "ready",
-      progress: 100,
-      label: "PDF ready",
       sizeBytes: pdfBytes.length,
       error: "",
       captureMode: "pdf",
@@ -234,8 +252,6 @@ async function startCapture() {
     clearCaptureArtifacts();
     setState({
       status: "error",
-      progress: 0,
-      label: "Capture failed",
       error: error?.message || "Failed to capture page.",
       sizeBytes: 0,
     });
@@ -265,6 +281,7 @@ async function startCapture() {
         // Best effort restore only.
       }
     }
+    restoreDefaultIcon();
     captureLock = false;
   }
 }
@@ -281,7 +298,7 @@ async function startCaptureJpg() {
   let activeTab = null;
 
   try {
-    setState({ status: "capturing", progress: 2, label: "Finding active tab...", error: "", sizeBytes: 0, captureMode: "jpg" });
+    setState({ status: "capturing", error: "", sizeBytes: 0, captureMode: "jpg" });
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     activeTab = tab;
@@ -296,29 +313,21 @@ async function startCaptureJpg() {
 
     latestJpgFileName = buildJpgFileName(activeTab);
     await hideExtensionUi(activeTab.id);
+    setCapturingIcon();
 
-    setState({ progress: 8, label: "Reading page metrics...", captureMode: "jpg" });
     metrics = await getPageMetrics(activeTab.id);
     await neutralizeStickyPositioning(activeTab.id);
 
     const capturePlan = buildCapturePlan(metrics);
-    setState({ progress: 12, label: `Capturing ${capturePlan.yPositions.length} slices...` });
 
     const screenshots = await captureScreenshots(
       activeTab.id,
       activeTab.windowId,
       capturePlan,
-      (done, total) => {
-        const ratio = total === 0 ? 0 : done / total;
-        const progress = 12 + Math.round(ratio * 58);
-        setState({ progress, label: `Captured ${done}/${total} slices...` });
-      }
+      () => {}
     );
 
-    setState({ progress: 75, label: "Stitching screenshots..." });
     const stitched = await stitchScreenshots(screenshots, metrics, capturePlan);
-
-    setState({ progress: 88, label: "Encoding high-quality JPEG..." });
     const jpgDataUrl = await stitchedCanvasToJpgDataUrl(stitched);
 
     latestJpgDataUrl = jpgDataUrl;
@@ -330,8 +339,6 @@ async function startCaptureJpg() {
 
     setState({
       status: "ready",
-      progress: 100,
-      label: "Image ready",
       sizeBytes: estimatedBytes,
       error: "",
       captureMode: "jpg",
@@ -340,8 +347,6 @@ async function startCaptureJpg() {
     clearCaptureArtifacts();
     setState({
       status: "error",
-      progress: 0,
-      label: "Capture failed",
       error: error?.message || "Failed to capture page.",
       sizeBytes: 0,
       captureMode: null,
@@ -367,6 +372,7 @@ async function startCaptureJpg() {
         // Best effort restore only.
       }
     }
+    restoreDefaultIcon();
     captureLock = false;
   }
 }
@@ -432,8 +438,6 @@ function resetUiState() {
   clearCaptureArtifacts();
   setState({
     status: "idle",
-    progress: 0,
-    label: "Ready",
     sizeBytes: 0,
     error: "",
     captureMode: null,
@@ -452,8 +456,6 @@ async function getStateForActiveTab() {
   if (!tab?.id) {
     return {
       status: "idle",
-      progress: 0,
-      label: "Ready",
       sizeBytes: 0,
       error: "",
       captureMode: null,
@@ -478,8 +480,6 @@ async function getStateForActiveTab() {
 
   return {
     status: "idle",
-    progress: 0,
-    label: "Ready",
     sizeBytes: 0,
     error: "",
     captureMode: null,
@@ -1323,7 +1323,31 @@ async function restoreStickyPositioning(tabId) {
   });
 }
 
+/* ── Extension UI: smooth fade-out / fade-in + display toggle ──
+   Popover & scrim fade out (200ms), then get display:none so they
+   don't appear in any captureVisibleTab call.  On restore the
+   display is brought back first, then opacity fades in. */
+
 async function hideExtensionUi(tabId) {
+  /* Phase 1 — fade to transparent */
+  await runInMainWorld(tabId, () => {
+    const ids = [
+      "__screenshot-ext-popover__",
+      "__screenshot-ext-scrim__",
+    ];
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.opacity = "0";
+        el.style.pointerEvents = "none";
+      }
+    }
+  });
+
+  /* Wait for the CSS transition to finish */
+  await delay(UI_FADE_DURATION_MS + 20);
+
+  /* Phase 2 — remove from rendering so captureVisibleTab is clean */
   await runInMainWorld(tabId, () => {
     const ids = [
       "__screenshot-ext-popover__",
@@ -1341,6 +1365,7 @@ async function hideExtensionUi(tabId) {
 }
 
 async function showExtensionUi(tabId) {
+  /* Phase 1 — restore display but keep transparent */
   await runInMainWorld(tabId, () => {
     const ids = [
       "__screenshot-ext-popover__",
@@ -1358,6 +1383,30 @@ async function showExtensionUi(tabId) {
         }
         delete el.dataset.extPrevDisplay;
       }
+    }
+    /* Ensure popover & scrim start transparent for the fade-in */
+    const popover = document.getElementById("__screenshot-ext-popover__");
+    const scrim = document.getElementById("__screenshot-ext-scrim__");
+    if (popover) { popover.style.opacity = "0"; }
+    if (scrim) { scrim.style.opacity = "0"; }
+  });
+
+  /* Force a style recalc so the browser sees opacity:0 before we
+     transition to opacity:1 (otherwise it may batch into one frame). */
+  await delay(20);
+
+  /* Phase 2 — fade in */
+  await runInMainWorld(tabId, () => {
+    const popover = document.getElementById("__screenshot-ext-popover__");
+    const scrim = document.getElementById("__screenshot-ext-scrim__");
+    if (popover) {
+      popover.style.opacity = "1";
+      popover.style.pointerEvents = "auto";
+      popover.style.transform = "translateY(0) scale(1)";
+    }
+    if (scrim) {
+      scrim.style.opacity = "1";
+      scrim.style.pointerEvents = "auto";
     }
   });
 }

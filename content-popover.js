@@ -28,8 +28,8 @@
     return;
   }
 
-  /* ── Scrim (dark overlay behind popover) ── */
-  /* Inject tokens onto the page :root so the scrim can resolve --color-scrim */
+  /* ── Scrim (radial gradient overlay behind popover) ── */
+  /* Inject tokens onto the page :root so the scrim can resolve --overlay */
   const scrimTokenStyle = document.createElement("link");
   scrimTokenStyle.id = "__screenshot-ext-scrim-tokens__";
   scrimTokenStyle.rel = "stylesheet";
@@ -59,7 +59,7 @@
     width: "100%",
     height: "100%",
     background:
-      "radial-gradient(ellipse at 100% 0%, var(--color-scrim) 0%, transparent 80%)",
+      "radial-gradient(ellipse at 100% 0%, var(--overlay) 0%, transparent 80%)",
     pointerEvents: "none",
   });
   scrim.appendChild(scrimColor);
@@ -74,8 +74,8 @@
     top: "24px",
     right: "24px",
     zIndex: "2147483647",
-    fontSize: "16px",
-    lineHeight: "1.5",
+    fontSize: "var(--text-base)",
+    lineHeight: "var(--leading-normal)",
     opacity: "0",
     transform: "translateY(-8px) scale(0.97)",
     transition: "opacity 180ms ease, transform 180ms ease",
@@ -108,64 +108,126 @@
     :host {
       all: initial;
       font-family: var(--font-family);
-      color: var(--color-text);
-      font-size: 16px;
-      line-height: 1.5;
+      color: var(--foreground);
+      font-size: var(--text-base);
+      line-height: var(--leading-normal);
     }
 
     *, *::before, *::after {
       box-sizing: border-box;
     }
 
-    /* ── Container ── */
-    .popover-container {
+    /* ── Dialog Content (shadcn-inspired) ── */
+    .dialog-content {
       width: var(--popover-width);
-      background: linear-gradient(160deg, var(--color-bg) 0%, var(--color-bg-muted) 100%);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
+      background: var(--popover);
+      color: var(--popover-foreground);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       box-shadow: var(--shadow-popover);
+      position: relative;
+      overflow: hidden;
     }
 
-    .panel {
+    .dialog-body {
       padding: var(--space-6);
     }
 
-    /* ── Typography ── */
-    h1 {
-      margin: 0 0 var(--space-1);
-      font-size: var(--text-lg);
-      font-weight: var(--weight-bold);
+    /* ── Dialog Header ── */
+    .dialog-header {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
     }
 
-    .subtitle {
-      margin: 0 0 var(--space-5);
+    .dialog-header + * {
+      margin-top: var(--space-5);
+    }
+
+    .dialog-title {
+      margin: 0;
+      font-size: var(--text-lg);
+      font-weight: var(--weight-semi);
+      line-height: var(--leading-none);
+      letter-spacing: var(--tracking-tight);
+    }
+
+    .dialog-description {
+      margin: 0;
       font-size: var(--text-sm);
-      color: var(--color-text-secondary);
+      line-height: var(--leading-sm);
+      color: var(--muted-foreground);
+    }
+
+    /* ── Dialog Close Button ── */
+    .dialog-close {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: none;
+      border-radius: var(--radius-xs);
+      background: transparent;
+      color: var(--muted-foreground);
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity var(--transition-fast), background var(--transition-fast);
+    }
+
+    .dialog-close:hover {
+      opacity: 1;
+      background: var(--accent);
+    }
+
+    .dialog-close svg {
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
     }
 
     .note {
-      margin: 0 0 var(--space-5);
+      margin: 0;
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      line-height: 1.35;
+      color: var(--muted-foreground);
+      line-height: var(--leading-xs);
+    }
+
+    /* ── Dialog Footer ── */
+    .dialog-footer {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      gap: var(--space-3);
+      padding: var(--space-6);
+      border-top: 1px solid var(--border);
+    }
+
+    .dialog-footer .btn {
+      flex: 1;
     }
 
     /* ── Buttons ── */
     .btn {
-      border: 1px solid var(--color-border);
-      background: var(--color-surface);
-      color: var(--color-text);
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--foreground);
       border-radius: var(--radius-sm);
       padding: 9px var(--space-5);
-      font-size: var(--text-base);
+      font-size: var(--text-sm);
       font-weight: var(--weight-semi);
+      line-height: var(--leading-sm);
       cursor: pointer;
       transition: background-color var(--transition-fast);
       font-family: inherit;
     }
 
     .btn:hover {
-      background: var(--color-bg-hover);
+      background: var(--accent);
     }
 
     .btn:disabled {
@@ -175,93 +237,53 @@
 
     .btn-primary {
       width: 100%;
-      background: var(--color-primary);
-      color: var(--color-primary-text);
-      border-color: var(--color-primary);
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border-color: var(--primary);
     }
 
     .btn-primary:hover {
-      background: var(--color-primary-hover);
-    }
-
-    .capture-buttons {
-      display: flex;
-      gap: var(--space-3);
-    }
-
-    .capture-buttons .btn {
-      flex: 1;
+      background: var(--primary);
+      opacity: 0.9;
     }
 
     .btn-jpg {
-      background: var(--color-bg-muted);
-      color: var(--color-text);
-      border-color: var(--color-border);
+      background: var(--secondary);
+      color: var(--secondary-foreground);
+      border-color: var(--border);
     }
 
     .btn-jpg:hover {
-      background: var(--color-bg-hover);
+      background: var(--accent);
     }
 
     .btn-copy {
-      background: var(--color-bg-muted);
-      color: var(--color-text);
-      border-color: var(--color-border);
+      background: var(--secondary);
+      color: var(--secondary-foreground);
+      border-color: var(--border);
     }
 
     .btn-copy:hover {
-      background: var(--color-bg-hover);
+      background: var(--accent);
     }
 
     .btn-copy.copied {
-      background: var(--color-bg-success);
-      color: var(--color-text-success);
-      border-color: var(--color-border-success);
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: var(--success-border);
     }
 
-    /* ── Progress ── */
-    .progress-wrap {
-      margin-top: var(--space-5);
-    }
-
-    .progress-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: var(--text-sm);
-      margin-bottom: var(--space-2);
-      color: var(--color-text-muted);
-    }
-
-    progress {
-      width: 100%;
-      height: var(--progress-height);
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    progress::-webkit-progress-bar {
-      background: var(--color-bg-muted);
-      border-radius: 5px;
-    }
-
-    progress::-webkit-progress-value {
-      background: var(--color-primary);
-      border-radius: 5px;
-    }
-
-    /* ── Result ── */
-    .result-wrap {
-      margin-top: var(--space-5);
-      padding: var(--space-4);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
+    /* ── Result footer ── */
+    .result-footer {
+      padding: var(--space-6);
+      border-top: 1px solid var(--border);
     }
 
     .size-text {
       margin: 0 0 var(--space-4);
-      font-size: var(--text-base);
-      color: var(--color-text-secondary);
+      font-size: var(--text-sm);
+      line-height: var(--leading-sm);
+      color: var(--muted-foreground);
     }
 
     .actions {
@@ -277,7 +299,8 @@
     .error-text {
       margin: var(--space-4) 0 0;
       font-size: var(--text-sm);
-      color: var(--color-text-error);
+      line-height: var(--leading-sm);
+      color: var(--destructive);
     }
 
     .hidden {
@@ -288,42 +311,45 @@
   shadow.adoptedStyleSheets = [tokensSheet, componentSheet];
 
   /* ────────────────────────────────────
-     HTML
+     HTML — shadcn Dialog structure
      ──────────────────────────────────── */
   const container = document.createElement("div");
-  container.className = "popover-container";
+  container.className = "dialog-content";
   container.innerHTML = `
-    <main class="panel">
-      <h1>📸 Full Page Capture</h1>
-      <p class="subtitle">Capture this tab as a crisp PDF or a single stitched image.</p>
+    <button class="dialog-close" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="dialog-body">
+      <div class="dialog-header">
+        <h2 class="dialog-title">📸 Full Page Capture</h2>
+        <p class="dialog-description">Capture this tab as a crisp PDF or a single stitched image.</p>
+      </div>
       <p class="note">Note: some PDF viewers may show selectable OCR text overlays even when pages are raster-only images.</p>
 
-      <div class="capture-buttons">
-        <button id="captureBtn" class="btn btn-primary">Capture as PDF</button>
-        <button id="captureJpgBtn" class="btn btn-jpg">Capture as Image</button>
-      </div>
-
-      <section id="progressWrap" class="progress-wrap hidden" aria-live="polite">
-        <div class="progress-row">
-          <span id="statusText">Preparing...</span>
-          <span id="progressPct">0%</span>
-        </div>
-        <progress id="progressBar" value="0" max="100"></progress>
-      </section>
-
-      <section id="resultWrap" class="result-wrap hidden">
-        <p id="sizeText" class="size-text"></p>
-        <div class="actions">
-          <button id="openBtn" class="btn">Open in New Tab</button>
-          <button id="downloadBtn" class="btn">Download</button>
-          <button id="copyImgBtn" class="btn btn-copy hidden">📋 Copy Image</button>
-        </div>
-      </section>
-
       <p id="errorText" class="error-text hidden"></p>
-    </main>
+    </div>
+
+    <div class="dialog-footer">
+      <button id="captureBtn" class="btn btn-primary">Capture as PDF</button>
+      <button id="captureJpgBtn" class="btn btn-jpg">Capture as Image</button>
+    </div>
+
+    <section id="resultWrap" class="result-footer hidden">
+      <p id="sizeText" class="size-text"></p>
+      <div class="actions">
+        <button id="openBtn" class="btn">Open in New Tab</button>
+        <button id="downloadBtn" class="btn">Download</button>
+        <button id="copyImgBtn" class="btn btn-copy hidden">📋 Copy Image</button>
+      </div>
+    </section>
   `;
   shadow.appendChild(container);
+
+  /* ── Close button handler ── */
+  container.querySelector(".dialog-close").addEventListener("click", closePopover);
 
   /* ────────────────────────────────────
      Element refs (inside shadow DOM)
@@ -332,10 +358,6 @@
 
   const captureBtn    = $("captureBtn");
   const captureJpgBtn = $("captureJpgBtn");
-  const progressWrap  = $("progressWrap");
-  const progressBar   = $("progressBar");
-  const progressPct   = $("progressPct");
-  const statusText    = $("statusText");
   const resultWrap    = $("resultWrap");
   const sizeText      = $("sizeText");
   const openBtn       = $("openBtn");
@@ -478,23 +500,7 @@
      ──────────────────────────────────── */
   function renderState(state) {
     const status = state?.status || "idle";
-    const progress = Math.max(0, Math.min(100, Math.round(state?.progress || 0)));
-    const label = state?.label || "Ready";
     const captureMode = state?.captureMode || null;
-
-    statusText.textContent = label;
-    progressBar.value = progress;
-    progressPct.textContent = `${progress}%`;
-
-    if (status === "capturing") {
-      progressWrap.classList.remove("hidden");
-      captureBtn.disabled = true;
-      captureJpgBtn.disabled = true;
-      captureBtn.textContent = "Capturing...";
-      captureJpgBtn.textContent = "Capturing...";
-      resultWrap.classList.add("hidden");
-      return;
-    }
 
     captureBtn.disabled = false;
     captureJpgBtn.disabled = false;
@@ -502,7 +508,6 @@
     if (status === "ready") {
       captureBtn.textContent = "Capture as PDF";
       captureJpgBtn.textContent = "Capture as Image";
-      progressWrap.classList.add("hidden");
       resultWrap.classList.remove("hidden");
 
       if (captureMode === "jpg") {
@@ -519,7 +524,6 @@
 
     captureBtn.textContent = "Capture as PDF";
     captureJpgBtn.textContent = "Capture as Image";
-    progressWrap.classList.add("hidden");
     resultWrap.classList.add("hidden");
     copyImgBtn.classList.add("hidden");
 

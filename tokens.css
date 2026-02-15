@@ -10,129 +10,115 @@
    when this sheet is adopted via shadow.adoptedStyleSheets.
 
    Theme: follows browser/system preference automatically via
-   @media (prefers-color-scheme: dark). Light uses Stone neutrals,
-   dark uses Slate neutrals.
+   @media (prefers-color-scheme: dark).
+
+   Color palette: shadcn default "Neutral" — pure achromatic oklch.
+   Naming convention: shadcn standard (--background, --foreground, etc.)
    ================================================================ */
 
 :root, :host {
 
-  /* ── Primitive Palette ──────────────────────────────────────
-     Full color scales from Tailwind / shadcn.
-     Semantic tokens below reference ONLY these primitives.
+  /* ── Semantic Color Tokens (Light theme — shadcn Neutral) ───
+     Uses oklch color space for perceptual uniformity.
      ──────────────────────────────────────────────────────── */
 
-  /* Stone (warm neutral) */
-  --stone-50:  #fafaf9;
-  --stone-100: #f5f5f4;
-  --stone-200: #e7e5e4;
-  --stone-300: #d6d3d1;
-  --stone-400: #a8a29e;
-  --stone-500: #78716c;
-  --stone-600: #57534e;
-  --stone-700: #44403c;
-  --stone-800: #292524;
-  --stone-900: #1c1917;
-  --stone-950: #0c0a09;
+  /* Backgrounds */
+  --background:              oklch(1 0 0);
+  --card:                    oklch(1 0 0);
+  --card-foreground:         oklch(0.145 0 0);
+  --popover:                 oklch(1 0 0);
+  --popover-foreground:      oklch(0.145 0 0);
 
-  /* Slate (cool neutral) */
-  --slate-50:  #f8fafc;
-  --slate-100: #f1f5f9;
-  --slate-200: #e2e8f0;
-  --slate-300: #cbd5e1;
-  --slate-400: #94a3b8;
-  --slate-500: #64748b;
-  --slate-600: #475569;
-  --slate-700: #334155;
-  --slate-800: #1e293b;
-  --slate-900: #0f172a;
-  --slate-950: #020617;
+  /* Foreground (text) */
+  --foreground:              oklch(0.145 0 0);
 
-  /* Emerald (success) */
-  --emerald-50:  #ecfdf5;
-  --emerald-100: #d1fae5;
-  --emerald-200: #a7f3d0;
-  --emerald-300: #6ee7b7;
-  --emerald-400: #34d399;
-  --emerald-500: #10b981;
-  --emerald-600: #059669;
-  --emerald-700: #047857;
-  --emerald-800: #065f46;
-  --emerald-900: #064e3b;
-  --emerald-950: #022c22;
+  /* Primary */
+  --primary:                 oklch(0.205 0 0);
+  --primary-foreground:      oklch(0.985 0 0);
 
-  /* Rose (error / destructive) */
-  --rose-50:  #fff1f2;
-  --rose-100: #ffe4e6;
-  --rose-200: #fecdd3;
-  --rose-300: #fda4af;
-  --rose-400: #fb7185;
-  --rose-500: #f43f5e;
-  --rose-600: #e11d48;
-  --rose-700: #be123c;
-  --rose-800: #9f1239;
-  --rose-900: #881337;
-  --rose-950: #4c0519;
+  /* Secondary */
+  --secondary:               oklch(0.97 0 0);
+  --secondary-foreground:    oklch(0.205 0 0);
 
-  /* Amber (warning — reserved) */
-  --amber-50:  #fffbeb;
-  --amber-100: #fef3c7;
-  --amber-200: #fde68a;
-  --amber-300: #fcd34d;
-  --amber-400: #fbbf24;
-  --amber-500: #f59e0b;
-  --amber-600: #d97706;
-  --amber-700: #b45309;
-  --amber-800: #92400e;
-  --amber-900: #78350f;
-  --amber-950: #451a03;
+  /* Muted */
+  --muted:                   oklch(0.97 0 0);
+  --muted-foreground:        oklch(0.556 0 0);
 
-  /* ── Semantic Tokens (Light theme — Stone) ──────────────── */
+  /* Accent */
+  --accent:                  oklch(0.97 0 0);
+  --accent-foreground:       oklch(0.205 0 0);
 
-  /* Colors — Text */
-  --color-text:              var(--stone-900);
-  --color-text-secondary:    var(--stone-600);
-  --color-text-muted:        var(--stone-400);
-  --color-text-error:        var(--rose-700);
-  --color-text-success:      var(--emerald-700);
+  /* Destructive */
+  --destructive:             oklch(0.577 0.245 27.325);
+  --destructive-foreground:  oklch(0.985 0 0);
 
-  /* Colors — Primary (neutral) */
-  --color-primary:           var(--stone-900);
-  --color-primary-hover:     var(--stone-800);
+  /* Success (extension-specific — not in base shadcn) */
+  --success:                 oklch(0.6 0.13 163);
+  --success-foreground:      oklch(0.985 0 0);
+  --success-bg:              oklch(0.962 0.044 156.743);
+  --success-border:          oklch(0.871 0.15 154.449);
 
-  /* Colors — Backgrounds */
-  --color-surface:           #ffffff;
-  --color-bg:                var(--stone-50);
-  --color-bg-muted:          var(--stone-100);
-  --color-bg-hover:          var(--stone-200);
-  --color-bg-success:        var(--emerald-50);
-  --color-bg-error:          var(--rose-50);
+  /* Border & Input */
+  --border:                  oklch(0.922 0 0);
+  --input:                   oklch(0.922 0 0);
+  --ring:                    oklch(0.708 0 0);
 
-  /* Colors — Borders */
-  --color-border:            var(--stone-300);
-  --color-border-success:    var(--emerald-300);
+  /* Overlay */
+  --overlay:                 rgba(0, 0, 0, 0.5);
 
-  /* Colors — Overlay */
-  --color-scrim:             rgba(0, 0, 0, 0.4);
+  /* ── Typography — Font Stacks ── */
+  --font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
 
-  /* Colors — Viewer */
-  --color-viewer-bg:         var(--slate-900);
-  --color-viewer-text:       var(--slate-200);
+  /* ── Typography — Font Size Scale (Tailwind / shadcn) ── */
+  --text-xs:   0.75rem;    /* 12px */
+  --text-sm:   0.875rem;   /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg:   1.125rem;   /* 18px */
+  --text-xl:   1.25rem;    /* 20px */
+  --text-2xl:  1.5rem;     /* 24px */
+  --text-3xl:  1.875rem;   /* 30px */
+  --text-4xl:  2.25rem;    /* 36px */
 
-  /* Colors — Primary text (for text on --color-primary backgrounds) */
-  --color-primary-text:      #ffffff;
+  /* ── Typography — Line Height Scale ── */
+  --leading-xs:      1rem;      /* pairs with --text-xs   */
+  --leading-sm:      1.25rem;   /* pairs with --text-sm   */
+  --leading-base:    1.5rem;    /* pairs with --text-base */
+  --leading-lg:      1.75rem;   /* pairs with --text-lg   */
+  --leading-xl:      1.75rem;   /* pairs with --text-xl   */
+  --leading-2xl:     2rem;      /* pairs with --text-2xl  */
+  --leading-3xl:     2.25rem;   /* pairs with --text-3xl  */
+  --leading-4xl:     2.5rem;    /* pairs with --text-4xl  */
 
-  /* ── Typography ── */
-  --font-family:   "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
-  --text-xs:       11px;
-  --text-sm:       12px;
-  --text-base:     13px;
-  --text-lg:       18px;
-  --weight-normal: 400;
-  --weight-semi:   600;
-  --weight-bold:   700;
+  /* ── Typography — Named Line Heights ── */
+  --leading-none:    1;
+  --leading-tight:   1.25;
+  --leading-snug:    1.375;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose:   2;
+  --leading-7:       1.75rem;   /* shadcn paragraph default */
+
+  /* ── Typography — Letter Spacing ── */
+  --tracking-tighter: -0.05em;
+  --tracking-tight:   -0.025em;
+  --tracking-normal:  0em;
+  --tracking-wide:    0.025em;
+  --tracking-wider:   0.05em;
+  --tracking-widest:  0.1em;
+
+  /* ── Typography — Font Weights ── */
+  --weight-normal:    400;
+  --weight-medium:    500;
+  --weight-semi:      600;
+  --weight-bold:      700;
+  --weight-extrabold: 800;
 
   /* ── Border Radius ── */
-  --radius:    0.625rem;                     /* 10px — base */
+  --radius:    0.625rem;                     /* 10px — base (matches shadcn) */
   --radius-xs: calc(var(--radius) - 4px);    /*  6px */
   --radius-sm: calc(var(--radius) - 2px);    /*  8px */
   --radius-md: var(--radius);                /* 10px */
@@ -149,7 +135,6 @@
 
   /* ── Layout ── */
   --popover-width: 340px;
-  --progress-height: 10px;
 
   /* ── Shadows ── */
   --shadow-card:    0 2px  8px  rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
@@ -164,45 +149,55 @@
 }
 
 /* ================================================================
-   Dark Theme — Slate neutrals
+   Dark Theme — shadcn Neutral dark palette
    Activated automatically by browser / OS preference.
-   Only semantic tokens are remapped; primitives stay unchanged.
    ================================================================ */
 
 @media (prefers-color-scheme: dark) {
   :root, :host {
-    /* Colors — Text */
-    --color-text:              var(--slate-50);
-    --color-text-secondary:    var(--slate-400);
-    --color-text-muted:        var(--slate-500);
-    --color-text-error:        var(--rose-400);
-    --color-text-success:      var(--emerald-400);
+    /* Backgrounds */
+    --background:              oklch(0.145 0 0);
+    --card:                    oklch(0.205 0 0);
+    --card-foreground:         oklch(0.985 0 0);
+    --popover:                 oklch(0.269 0 0);
+    --popover-foreground:      oklch(0.985 0 0);
 
-    /* Colors — Primary (neutral) */
-    --color-primary:           var(--slate-50);
-    --color-primary-hover:     var(--slate-200);
+    /* Foreground (text) */
+    --foreground:              oklch(0.985 0 0);
 
-    /* Colors — Backgrounds */
-    --color-surface:           var(--slate-800);
-    --color-bg:                var(--slate-950);
-    --color-bg-muted:          var(--slate-900);
-    --color-bg-hover:          var(--slate-800);
-    --color-bg-success:        var(--emerald-950);
-    --color-bg-error:          var(--rose-950);
+    /* Primary */
+    --primary:                 oklch(0.922 0 0);
+    --primary-foreground:      oklch(0.205 0 0);
 
-    /* Colors — Borders */
-    --color-border:            var(--slate-700);
-    --color-border-success:    var(--emerald-800);
+    /* Secondary */
+    --secondary:               oklch(0.269 0 0);
+    --secondary-foreground:    oklch(0.985 0 0);
 
-    /* Colors — Overlay */
-    --color-scrim:             rgba(0, 0, 0, 0.6);
+    /* Muted */
+    --muted:                   oklch(0.269 0 0);
+    --muted-foreground:        oklch(0.708 0 0);
 
-    /* Colors — Viewer */
-    --color-viewer-bg:         var(--slate-950);
-    --color-viewer-text:       var(--slate-200);
+    /* Accent */
+    --accent:                  oklch(0.371 0 0);
+    --accent-foreground:       oklch(0.985 0 0);
 
-    /* Colors — Primary text */
-    --color-primary-text:      var(--slate-900);
+    /* Destructive */
+    --destructive:             oklch(0.704 0.191 22.216);
+    --destructive-foreground:  oklch(0.985 0 0);
+
+    /* Success (extension-specific) */
+    --success:                 oklch(0.7 0.15 162);
+    --success-foreground:      oklch(0.985 0 0);
+    --success-bg:              oklch(0.25 0.05 163);
+    --success-border:          oklch(0.45 0.1 160);
+
+    /* Border & Input */
+    --border:                  oklch(1 0 0 / 10%);
+    --input:                   oklch(1 0 0 / 15%);
+    --ring:                    oklch(0.556 0 0);
+
+    /* Overlay */
+    --overlay:                 rgba(0, 0, 0, 0.6);
 
     /* ── Shadows (stronger for dark backgrounds) ── */
     --shadow-card:    0 2px  8px  rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06);

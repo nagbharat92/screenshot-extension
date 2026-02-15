@@ -1,6 +1,7 @@
 /* ================================================================
    Design System — Component styles.
    Tokens are defined in tokens.css (single source of truth).
+   Uses shadcn Neutral color palette and naming convention.
    ================================================================ */
 
 @import url('tokens.css');
@@ -24,45 +25,264 @@ body {
   width: calc(var(--popover-width) + var(--space-3) * 2);
   background: none !important;
   font-family: var(--font-family);
-  color: var(--color-text);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--foreground);
 }
 
 /* ================================================================
-   Popover Container
+   Dialog — shadcn-inspired structure
+   ================================================================ */
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  background: var(--overlay);
+  pointer-events: auto;
+}
+
+.dialog-content {
+  width: var(--popover-width);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-popover);
+  position: relative;
+  overflow: hidden;
+}
+
+.dialog-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dialog-header + * {
+  margin-top: var(--space-5);
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semi);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-tight);
+}
+
+.dialog-description {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--muted-foreground);
+}
+
+.dialog-close {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+}
+
+.dialog-close:hover {
+  opacity: 1;
+  background: var(--accent);
+}
+
+.dialog-close svg {
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.dialog-body {
+  padding: var(--space-6);
+}
+
+.dialog-footer {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border-top: 1px solid var(--border);
+}
+
+.dialog-footer .btn {
+  flex: 1;
+}
+
+/* ================================================================
+   Popover Container (popup.html)
    ================================================================ */
 
 .popover-container {
-  background: linear-gradient(160deg, var(--color-bg) 0%, var(--color-bg-muted) 100%);
-  border-radius: var(--radius-xl);
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-card);
 }
 
-.panel {
-  padding: var(--space-6);
-}
-
 /* ================================================================
-   Typography
+   Typography — shadcn styles for headings, paragraphs, lists, etc.
+   https://ui.shadcn.com/docs/components/radix/typography
    ================================================================ */
 
 h1 {
-  margin: 0 0 var(--space-1);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-bold);
+  margin: 0;
+  scroll-margin-top: 5rem;
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-4xl);
+  text-wrap: balance;
 }
 
-.subtitle {
-  margin: 0 0 var(--space-5);
+h2 {
+  margin: 0;
+  scroll-margin-top: 5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-3xl);
+}
+
+h2:first-child {
+  margin-top: 0;
+}
+
+h3 {
+  margin: 0;
+  scroll-margin-top: 5rem;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-2xl);
+}
+
+h4 {
+  margin: 0;
+  scroll-margin-top: 5rem;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-xl);
+}
+
+p {
+  margin: 0;
+  line-height: var(--leading-7);
+}
+
+p:not(:first-child) {
+  margin-top: 1.5rem;
+}
+
+blockquote {
+  margin: 1.5rem 0;
+  border-left: 2px solid var(--border);
+  padding-left: 1.5rem;
+  font-style: italic;
+}
+
+code {
+  position: relative;
+  background: var(--muted);
+  border-radius: var(--radius-xs);
+  padding: 0.2rem 0.3rem;
+  font-family: var(--font-mono);
   font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  font-weight: var(--weight-semi);
+}
+
+ul {
+  margin: 1.5rem 0;
+  margin-left: 1.5rem;
+  padding: 0;
+  list-style: disc;
+}
+
+ul > li {
+  margin-top: 0.5rem;
+}
+
+ol {
+  margin: 1.5rem 0;
+  margin-left: 1.5rem;
+  padding: 0;
+  list-style: decimal;
+}
+
+ol > li {
+  margin-top: 0.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: var(--weight-bold);
+  border-bottom: 1px solid var(--border);
+}
+
+table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Typography Utility Classes (shadcn) ── */
+
+.lead {
+  font-size: var(--text-xl);
+  line-height: var(--leading-xl);
+  color: var(--muted-foreground);
+}
+
+.large {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semi);
+  line-height: var(--leading-lg);
+}
+
+.small {
+  font-size: var(--text-sm);
+  line-height: var(--leading-none);
+  font-weight: var(--weight-medium);
+}
+
+.muted {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--muted-foreground);
 }
 
 .note {
-  margin: 0 0 var(--space-5);
+  margin: 0;
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  line-height: 1.35;
+  line-height: var(--leading-xs);
+  color: var(--muted-foreground);
 }
 
 /* ================================================================
@@ -70,20 +290,21 @@ h1 {
    ================================================================ */
 
 .btn {
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
   border-radius: var(--radius-sm);
   padding: 9px var(--space-5);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: var(--weight-semi);
+  line-height: var(--leading-sm);
   cursor: pointer;
   transition: background-color var(--transition-fast);
   font-family: var(--font-family);
 }
 
 .btn:hover {
-  background: var(--color-bg-hover);
+  background: var(--accent);
 }
 
 .btn:disabled {
@@ -93,87 +314,56 @@ h1 {
 
 .btn-primary {
   width: 100%;
-  background: var(--color-primary);
-  color: var(--color-primary-text);
-  border-color: var(--color-primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
 }
 
 .btn-primary:hover {
-  background: var(--color-primary-hover);
-}
-
-.capture-buttons {
-  display: flex;
-  gap: var(--space-3);
-}
-
-.capture-buttons .btn {
-  flex: 1;
+  background: var(--primary);
+  opacity: 0.9;
 }
 
 .btn-jpg {
-  background: var(--color-bg-muted);
-  color: var(--color-text);
-  border-color: var(--color-border);
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--border);
 }
 
 .btn-jpg:hover {
-  background: var(--color-bg-hover);
+  background: var(--accent);
 }
 
 .btn-copy {
-  background: var(--color-bg-muted);
-  color: var(--color-text);
-  border-color: var(--color-border);
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--border);
 }
 
 .btn-copy:hover {
-  background: var(--color-bg-hover);
+  background: var(--accent);
 }
 
 .btn-copy.copied {
-  background: var(--color-bg-success);
-  color: var(--color-text-success);
-  border-color: var(--color-border-success);
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success-border);
 }
 
 /* ================================================================
-   Progress
+   Result Footer
    ================================================================ */
 
-.progress-wrap {
-  margin-top: var(--space-5);
-}
-
-.progress-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: var(--text-sm);
-  margin-bottom: var(--space-2);
-  color: var(--color-text-muted);
-}
-
-progress {
-  width: 100%;
-  height: var(--progress-height);
-}
-
-/* ================================================================
-   Result
-   ================================================================ */
-
-.result-wrap {
-  margin-top: var(--space-5);
-  padding: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+.result-footer {
+  padding: var(--space-6);
+  border-top: 1px solid var(--border);
 }
 
 .size-text {
   margin: 0 0 var(--space-4);
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--muted-foreground);
 }
 
 .actions {
@@ -192,7 +382,8 @@ progress {
 .error-text {
   margin: var(--space-4) 0 0;
   font-size: var(--text-sm);
-  color: var(--color-text-error);
+  line-height: var(--leading-sm);
+  color: var(--destructive);
 }
 
 .hidden {
