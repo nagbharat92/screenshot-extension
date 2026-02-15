@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Capture PDF</title>
+    <link rel="stylesheet" href="design-system.css" />
+  </head>
+  <body>
+    <div class="popover-container">
+    <main class="panel">
+      <h1>📸 Full Page Capture</h1>
+      <p class="subtitle">Capture this tab as a crisp PDF or a single stitched image.</p>
+      <p class="note">Note: some PDF viewers may show selectable OCR text overlays even when pages are raster-only images.</p>
+
+      <div class="capture-buttons">
+        <button id="captureBtn" class="btn btn-primary">Capture as PDF</button>
+        <button id="captureJpgBtn" class="btn btn-jpg">Capture as Image</button>
+      </div>
+
+      <section id="progressWrap" class="progress-wrap hidden" aria-live="polite">
+        <div class="progress-row">
+          <span id="statusText">Preparing...</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <progress id="progressBar" value="0" max="100"></progress>
+      </section>
+
+      <section id="resultWrap" class="result-wrap hidden">
+        <p id="sizeText" class="size-text"></p>
+        <div class="actions">
+          <button id="openBtn" class="btn">Open in New Tab</button>
+          <button id="downloadBtn" class="btn">Download</button>
+          <button id="copyImgBtn" class="btn btn-copy hidden">📋 Copy Image</button>
+        </div>
+      </section>
+
+      <p id="errorText" class="error-text hidden"></p>
+    </main>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
